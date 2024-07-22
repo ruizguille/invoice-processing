@@ -6,6 +6,10 @@ authors = ["ruizguille <guillermo@codeawake.com>"]
 
 [tool.poetry.dependencies]
 python = "^3.11"
+pdf2image = "^1.17.0"
+pydantic = "^2.8.2"
+pydantic-settings = "^2.3.4"
+openai = "^1.36.1"
 
 
 [tool.poetry.group.dev.dependencies]
