@@ -1,0 +1,16 @@
+[tool.poetry]
+name = "invoice-processing"
+version = "0.1.0"
+description = ""
+authors = ["ruizguille <guillermo@codeawake.com>"]
+
+[tool.poetry.dependencies]
+python = "^3.11"
+
+
+[tool.poetry.group.dev.dependencies]
+ipykernel = "^6.29.5"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
