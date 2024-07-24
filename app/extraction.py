@@ -25,7 +25,7 @@ async def extract_invoice_data(base64_img):
         model='gpt-4o',
         response_format={ 'type': 'json_object' },
         messages=[
-            {'role': 'system', 'content': SYSTEM_PROMPT},
+            {'role': 'system', 'content': SYSTEM_PROMPT.format(company=settings.COMPANY_NAME)},
             {'role': 'user', 'content': [
                 {'type': 'image_url', 'image_url': {'url': f'data:image/png;base64,{base64_img}'}}
             ]}
