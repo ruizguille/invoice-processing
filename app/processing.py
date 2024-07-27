@@ -33,7 +33,7 @@ class Invoice(BaseModel):
     total: float
     terms: str | None = None
 
-def normalize_invoice(invoice):
+def flatten_invoice_structure(invoice):
     flat = {
         'Invoice Number': invoice.invoice_number,
         'Invoice Date': invoice.invoice_date,
@@ -59,14 +59,14 @@ def normalize_invoice(invoice):
     
     return flat
 
-def parse_and_normalize_invoices(invoices_filenames, invoices_json):
-    normalized_invoices = []
+def build_invoices_dataframe(invoices_filenames, invoices_json):
+    flat_invoices = []
     for filename, invoice_json in zip(invoices_filenames, invoices_json):
         try:
             invoice_data = json.loads(invoice_json)
             validated_invoice = Invoice(**invoice_data)
-            normalized_invoice = normalize_invoice(validated_invoice)
-            normalized_invoices.append(normalized_invoice)
+            flat_invoice = flatten_invoice_structure(validated_invoice)
+            flat_invoices.append(flat_invoice)
         except json.JSONDecodeError as e:
             print(f'JSON parsing error in invoice {filename}: {e}')
         except ValidationError as e:
@@ -74,7 +74,7 @@ def parse_and_normalize_invoices(invoices_filenames, invoices_json):
         except Exception as e:
             print(f'Unexpected error in invoice {filename}: {e}')
     
-    invoices_df = pd.DataFrame(normalized_invoices)
+    invoices_df = pd.DataFrame(flat_invoices)
     invoices_df['Invoice Date'] = pd.to_datetime(invoices_df['Invoice Date'])
     invoices_df.insert(2, 'Year-Month', invoices_df['Invoice Date'].dt.to_period('M'))
     return invoices_df
@@ -134,15 +134,16 @@ def create_excel_report(invoices_df, total_s, monthly_df, filepath):
         worksheet.write('A12', 'MONTHLY', title_format)
         monthly_df.to_excel(writer, sheet_name='Summary', startrow=12, startcol=0, header=False)
 
-        # Formatting
-        for row in [3, 4, 5, 6, 7, 8, 14, 15, 16, 17, 18, 19]:
+        # Money formatting
+        money_rows = list(range(3, 9)) + list(range(14, 20))
+        for row in money_rows:
             worksheet.set_row(row, None, money_format)
 
         # Create chart
         chart = workbook.add_chart({'type': 'line'})
 
         num_cols = monthly_df.shape[1]
-        for i, metric in enumerate(['Revenue', 'Expenses', 'Profit']):
+        for i, metric in enumerate(['Revenue', 'Expenses', 'Net Income']):
             chart.add_series({
                 'name': metric,
                 'categories': ['Summary', 12, 1, 12, num_cols],
